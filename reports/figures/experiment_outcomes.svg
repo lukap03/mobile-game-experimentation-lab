@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" role="img" aria-labelledby="title desc">
+<title id="title">Randomized experiment retention outcomes</title>
+<desc id="desc">Treatment improves D7 retention from 37.24 to 44.10 percent and D1 retention from 54.14 to 59.75 percent.</desc>
+<rect width="900" height="500" fill="#ffffff"/>
+<text x="450" y="42" text-anchor="middle" font-family="Arial" font-size="26" font-weight="700" fill="#0f172a">Randomized experiment outcomes</text>
+<text x="450" y="70" text-anchor="middle" font-family="Arial" font-size="15" fill="#475569">20,000 synthetic players · seed 42 · GitHub Actions verified</text>
+<line x1="100" y1="410" x2="840" y2="410" stroke="#94a3b8"/>
+<line x1="100" y1="110" x2="100" y2="410" stroke="#94a3b8"/>
+<g font-family="Arial" font-size="13" fill="#64748b">
+<text x="86" y="415" text-anchor="end">0%</text><text x="86" y="315" text-anchor="end">20%</text><text x="86" y="215" text-anchor="end">40%</text><text x="86" y="115" text-anchor="end">60%</text>
+</g>
+<g stroke="#e2e8f0"><line x1="100" y1="310" x2="840" y2="310"/><line x1="100" y1="210" x2="840" y2="210"/><line x1="100" y1="110" x2="840" y2="110"/></g>
+<rect x="190" y="223.8" width="110" height="186.2" fill="#64748b"/><rect x="310" y="189.5" width="110" height="220.5" fill="#22c55e"/>
+<rect x="540" y="139.3" width="110" height="270.7" fill="#64748b"/><rect x="660" y="111.3" width="110" height="298.7" fill="#22c55e"/>
+<g font-family="Arial" font-size="16" font-weight="700" fill="#0f172a">
+<text x="245" y="213" text-anchor="middle">37.24%</text><text x="365" y="179" text-anchor="middle">44.10%</text>
+<text x="595" y="129" text-anchor="middle">54.14%</text><text x="715" y="101" text-anchor="middle">59.75%</text>
+</g>
+<g font-family="Arial" font-size="16" fill="#0f172a"><text x="305" y="445" text-anchor="middle">D7 retention</text><text x="655" y="445" text-anchor="middle">D1 retention</text></g>
+<rect x="330" y="468" width="16" height="16" fill="#64748b"/><text x="354" y="481" font-family="Arial" font-size="14">Control</text>
+<rect x="455" y="468" width="16" height="16" fill="#22c55e"/><text x="479" y="481" font-family="Arial" font-size="14">Treatment</text>
+</svg>
