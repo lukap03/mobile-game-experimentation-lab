@@ -1,93 +1,168 @@
 # Mobile Game Experimentation Lab
 
-[![Tests](https://github.com/lukap03/mobile-game-experimentation-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/lukap03/mobile-game-experimentation-lab/actions/workflows/tests.yml)
+[![Tests and analysis](https://github.com/lukap03/mobile-game-experimentation-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/lukap03/mobile-game-experimentation-lab/actions/workflows/tests.yml)
 
-An end-to-end, reproducible portfolio project that demonstrates product experimentation and predictive modelling for a free-to-play mobile game. It creates realistic player-level telemetry, evaluates a randomized onboarding experiment, predicts D7 churn from information available by the end of day 1, and projects the business impact of a rollout.
+An end-to-end data-science portfolio project for a hypothetical free-to-play mobile game. It demonstrates experiment design, statistical inference, churn modelling, uncertainty-aware rollout projections, SQL telemetry transformation, automated testing, and reproducible reporting.
 
-> **Synthetic-data disclosure:** every player, event, outcome, and monetary value in this repository is programmatically generated. No real users or company data are used. Results are illustrative and are not business claims.
+> **Synthetic-data disclosure:** every player, event, outcome, and monetary value in this repository is programmatically generated. No real users, game telemetry, or company data are used. Results demonstrate the methodology and are not claims about a real product.
 
 ## Business question
 
-Does a streamlined onboarding experience improve **D7 retention** without harming revenue? The analysis treats D7 retention as the pre-specified primary metric; D1 retention and day-1 engagement are secondary metrics; and ARPU is a guardrail. Assignment is randomized 50/50 at player creation.
+Does a streamlined onboarding experience improve **D7 retention** without harming monetization?
 
-## Reproduced results
+- **Primary metric:** D7 retention
+- **Secondary metrics:** D1 retention and day-1 sessions
+- **Guardrail:** D7 ARPU
+- **Assignment:** 50/50 randomized control and treatment
+- **Decision principle:** combine effect size, uncertainty, practical importance, and guardrail risk
 
-The following results are generated with `seed=42` and 20,000 players (`python -m src.run_analysis`). Because the generator is deterministic, rerunning the command reproduces the CSVs, model, JSON summary, and figures.
+## Verified results
 
-| Experiment metric | Control | Treatment | Absolute uplift | 95% CI | p-value |
+The complete pipeline was executed in [GitHub Actions run #13](https://github.com/lukap03/mobile-game-experimentation-lab/actions/runs/34862962467) with 20,000 synthetic players and seed 42. Both pytest jobs and the full analysis job passed. Machine-readable values are committed in [reports/metrics.json](reports/metrics.json).
+
+### Experiment health
+
+- Treatment allocation: **49.64%** (9,928 of 20,000 players)
+- Sample-ratio-mismatch p-value: **0.312**
+- Approximate D7 minimum detectable effect at 80% power: **1.92 percentage points**
+
+The SRM test does not indicate an assignment imbalance. Passing SRM is a data-quality check, not proof that every implementation issue is absent.
+
+### Experiment readout
+
+| Metric | Control | Treatment | Absolute uplift | 95% CI | p-value |
 |---|---:|---:|---:|---:|---:|
-| D7 retention (primary) | 30.22% | 33.39% | +3.17 pp | [1.87, 4.46] pp | <0.001 |
-| D1 retention | 44.78% | 48.02% | +3.24 pp | [1.86, 4.62] pp | <0.001 |
-| Day-1 sessions | 2.12 | 2.28 | +0.16 | [0.12, 0.20] | <0.001 |
-| ARPU (guardrail) | $1.20 | $1.25 | +$0.05 | [-$0.09, $0.18] | 0.494 |
+| D7 retention — primary | 37.24% | 44.10% | **+6.86 pp** | [5.50, 8.21] pp | <0.001 |
+| D1 retention | 54.14% | 59.75% | **+5.61 pp** | [4.24, 6.98] pp | <0.001 |
+| Day-1 sessions | 1.45 | 1.59 | **+0.14** | [0.12, 0.16] | <0.001 |
+| D7 ARPU — guardrail | $1.20 | $1.24 | +$0.04 | [-$0.09, $0.17] | 0.560 |
 
-The two-proportion z-test supports a positive D7 effect; the non-parametric bootstrap gives a consistent interval. The ARPU interval crosses zero, so there is no evidence of guardrail harm. In the generated holdout set, the leakage-safe logistic-regression pipeline achieves **ROC-AUC 0.720**, **PR-AUC 0.807**, **precision 0.734**, **recall 0.876**, and **F1 0.799** for D7 churn. Exact machine-readable values are written to `reports/metrics.json`; small last-decimal differences can occur across dependency versions.
+![Control and treatment retention](reports/figures/experiment_outcomes.svg)
 
-## Methodology
+The synthetic treatment produces a statistically and practically clear retention improvement. The ARPU interval crosses zero, so the experiment does **not** establish either an increase or a decrease in revenue. In a real experiment I would predefine a non-inferiority margin before claiming that the monetization guardrail passed.
 
-### Telemetry and experiment
+### Product recommendation
 
-- Player attributes: country, platform, acquisition channel, age band, and install date.
-- Pre-outcome behaviour: tutorial completion, first-day sessions, playtime, levels, and day-1 spend.
-- Outcomes: D1 and D7 retention, D7 spend, and churn (`1 - retained_d7`).
-- A stable seeded RNG assigns variants before outcomes are generated.
-- Binary outcomes use a two-proportion z-test and a Newcombe/Wald-style normal confidence interval; continuous metrics use Welch's t-test.
-- A seeded bootstrap estimates empirical confidence intervals for every metric.
-- Segment tables report treatment effects by platform, country, and acquisition channel, with sample sizes and uncertainty.
+For a comparable real population, these results would support a **staged rollout** of the onboarding change while continuing to monitor ARPU and technical guardrails. Segment results are exploratory and should be validated in a follow-up experiment rather than treated as confirmed heterogeneous effects.
 
-The analysis reports confidence intervals and p-values rather than declaring that a threshold alone proves practical importance. Segment findings are exploratory and are not adjusted for multiple comparisons.
+## Churn model
 
-### Churn model and leakage prevention
+A logistic-regression pipeline predicts D7 churn using only information available by the end of day 1:
 
-The model predicts D7 churn using only fields known by the end of day 1: assignment, profile fields, tutorial completion, and day-1 activity/spend. `retained_d7`, `churned_d7`, `revenue_d7`, and all later information are explicitly excluded. A `ColumnTransformer` imputes/scales numeric variables and one-hot encodes categorical variables inside a scikit-learn `Pipeline`, followed by `LogisticRegression`. A stratified holdout is used for ROC-AUC, PR-AUC, precision, recall, F1, and the confusion matrix.
+- experiment assignment and player profile,
+- tutorial completion,
+- first-day sessions, playtime, progression, and spend.
 
-### Monte Carlo projection
+D7 outcomes and later revenue are explicitly excluded to prevent target leakage. Preprocessing and modelling are kept inside one scikit-learn `Pipeline` with imputation, scaling, one-hot encoding, and class-balanced logistic regression.
 
-The projection jointly samples retention uplift and ARPU change from bootstrap distributions. It reports expected incremental retained players and revenue for a configurable rollout population, together with 95% simulation intervals and the probability of positive impact. This propagates experimental uncertainty; it is not a causal forecast beyond a population comparable to the synthetic sample.
+| Holdout metric | Value |
+|---|---:|
+| ROC-AUC | 0.632 |
+| PR-AUC | 0.701 |
+| PR-AUC prevalence baseline | 0.594 |
+| Precision | 0.700 |
+| Recall | 0.509 |
+| F1 | 0.590 |
+| Brier score | 0.237 |
+
+![Churn model holdout metrics](reports/figures/churn_model_performance.svg)
+
+The model provides moderate ranking signal, not production-ready performance. Tutorial completion and playtime are the strongest reported predictors of lower churn probability. Coefficients are predictive associations and should not be interpreted as causal effects.
+
+## Uncertainty-aware rollout projection
+
+The projection resamples experimental uncertainty and scales treatment-minus-control effects to one million comparable players.
+
+| Projection | Mean | 95% simulation interval | P(positive) |
+|---|---:|---:|---:|
+| Incremental D7 retained players | +68,704 | [+55,306, +82,465] | 100% |
+| Incremental D7 revenue | +$37,859 | [-$90,766, +$164,686] | 71.4% |
+
+![Rollout uncertainty](reports/figures/rollout_projection.svg)
+
+This is an uncertainty-aware scenario projection, not a forecast for a real game. It assumes the synthetic experiment population is representative of the rollout population and does not model novelty effects, interference, seasonality, or long-term player behavior.
+
+## Statistical methodology
+
+- Binary outcomes: two-proportion z-test with an unpooled Wald confidence interval for the absolute difference.
+- Continuous outcomes: Welch's t-test and normal-approximation confidence interval.
+- All metrics: seeded non-parametric percentile bootstrap intervals.
+- Assignment health: exact binomial SRM test.
+- Sensitivity: approximate two-sided minimum detectable effect at 80% power.
+- Segments: exploratory effects by platform, country, and acquisition channel; no multiplicity-adjusted confirmatory claims.
+
+The primary metric is specified before reading segment results. Statistical significance alone is not treated as a product decision.
+
+## SQL telemetry layer
+
+[sql/telemetry_aggregation.sql](sql/telemetry_aggregation.sql) demonstrates how raw `game_events` and experiment assignments could be transformed into leakage-auditable player-level D1/D7 features. [sql/experiment_readout.sql](sql/experiment_readout.sql) calculates variant metrics and absolute uplifts in PostgreSQL.
+
+The Python generator produces an analytical player-level table directly; the SQL files document the corresponding warehouse transformation for a production event stream.
 
 ## Repository layout
 
 ```text
-src/                    Python package: generation, inference, modelling, projection
-sql/                    Warehouse-ready telemetry aggregation queries
-tests/                  Unit and integration tests
-reports/figures/         Generated charts (kept via .gitkeep)
-reports/metrics.json     Generated by the analysis command
-.github/workflows/       Continuous-integration configuration
+src/
+  data_generation.py      deterministic synthetic population
+  experiment.py           inference, SRM, MDE, and segment analysis
+  modeling.py             leakage-safe churn pipeline
+  projection.py           bounded-memory rollout simulation
+  visualization.py        publication-ready charts
+  run_analysis.py         end-to-end CLI
+sql/                      telemetry aggregation and experiment readout
+tests/                    data, inference, model, and projection tests
+reports/metrics.json      CI-verified machine-readable results
+reports/figures/          visible portfolio charts
+.github/workflows/        tests plus full reproducibility run
 ```
 
-## Quick start
+## Run locally
 
 Python 3.10+ is supported.
 
 ```bash
+git clone https://github.com/lukap03/mobile-game-experimentation-lab.git
+cd mobile-game-experimentation-lab
 python -m venv .venv
+```
+
+Linux/macOS:
+
+```bash
 source .venv/bin/activate
+```
+
+Windows PowerShell:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+Install and run:
+
+```bash
 python -m pip install -r requirements.txt
-python -m src.run_analysis --players 20000 --seed 42
-pytest -q
+python -m src.run_analysis
+python -m pytest -q
 ```
 
-Generated player-level CSV data is stored in `data/processed/` and intentionally ignored by Git. To run individual stages:
+The generated player CSV is intentionally ignored because it is fully reproducible. GitHub Actions runs tests on Python 3.10 and 3.12, executes the complete deterministic analysis, and publishes the report files as a workflow artifact.
 
-```python
-from src.data_generation import SimulationConfig, generate_telemetry
-from src.experiment import analyze_experiment
+## Production extensions
 
-players = generate_telemetry(SimulationConfig(n_players=20_000, seed=42))
-results = analyze_experiment(players, seed=42)
-```
+With real production telemetry I would:
 
-## SQL
+1. define the event contract, ownership, freshness checks, and exposure logging;
+2. validate randomization using SRM and pre-treatment covariate balance;
+3. perform power analysis before launching the experiment;
+4. add CUPED using a truly pre-experiment engagement covariate;
+5. use cluster-robust or sequential methods if the experiment design requires them;
+6. evaluate calibration, drift, subgroup performance, privacy, and intervention ethics before operationalizing churn scores;
+7. monitor long-term retention, payer conversion, crashes, latency, and economy health during staged rollout.
 
-`sql/telemetry_aggregation.sql` converts an event stream into one row per player with D1/D7 retention, engagement, and revenue. `sql/experiment_readout.sql` calculates variant-level metrics and absolute uplifts. Queries use PostgreSQL syntax and document the expected tables.
+## Responsible interpretation
 
-## Reproducibility and responsible use
-
-- Random seeds are passed explicitly through every stochastic stage.
-- Tests assert assignment balance, schema, deterministic output, leakage controls, inference behaviour, and model outputs.
-- Generated datasets, serialized models, caches, and local environments are ignored.
-- The model is an analytical demonstration, not a player-targeting system. Before real deployment, assess calibration, drift, subgroup performance, privacy, and intervention ethics.
+Synthetic data makes the project safe and reproducible, but also means the conclusions are constructed by the data-generating process. The value of the repository is the analytical workflow, testing discipline, and transparent interpretation—not the magnitude of the simulated uplift.
 
 ## License
 

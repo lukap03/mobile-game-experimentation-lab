@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "synthetic_data": true,
+    "players": 20000,
+    "seed": 42,
+    "verified_by": "GitHub Actions run 34862962467"
+  },
+  "experiment_diagnostics": {
+    "n_players": 20000,
+    "n_treatment": 9928,
+    "treatment_share": 0.4964,
+    "srm_p_value": 0.3119385212541204,
+    "d7_baseline_rate": 0.37241858617950757,
+    "d7_mde_80_power": 0.019223774393146296
+  },
+  "experiment": {
+    "retained_d7": {
+      "control": 0.37241858617950757,
+      "treatment": 0.4409750201450443,
+      "uplift": 0.06855643396553673,
+      "relative_uplift": 0.1840843516131394,
+      "ci_low": 0.05497212026305443,
+      "ci_high": 0.08214074766801904,
+      "p_value": 5.651443232076424e-23,
+      "bootstrap_ci_low": 0.05510282053021628,
+      "bootstrap_ci_high": 0.08181032704735416,
+      "n_control": 10072,
+      "n_treatment": 9928
+    },
+    "retained_d1": {
+      "control": 0.5414019062748213,
+      "treatment": 0.5975020145044319,
+      "uplift": 0.056100108229610535,
+      "relative_uplift": 0.10362007887193055,
+      "ci_low": 0.04239764085386417,
+      "ci_high": 0.06980257560535691,
+      "p_value": 1.1400924070595548e-15,
+      "bootstrap_ci_low": 0.04330150475000628,
+      "bootstrap_ci_high": 0.06953740681916944,
+      "n_control": 10072,
+      "n_treatment": 9928
+    },
+    "sessions_d1": {
+      "control": 1.4480738681493248,
+      "treatment": 1.5876309427880742,
+      "uplift": 0.13955707463874933,
+      "relative_uplift": 0.09637427876321449,
+      "ci_low": 0.11529749211824805,
+      "ci_high": 0.16381665715925062,
+      "p_value": 2.1444758570288057e-29,
+      "bootstrap_ci_low": 0.11549116706210051,
+      "bootstrap_ci_high": 0.16256719548341392,
+      "n_control": 10072,
+      "n_treatment": 9928
+    },
+    "revenue_d7": {
+      "control": 1.2027889197776012,
+      "treatment": 1.2411935938759064,
+      "uplift": 0.03840467409830528,
+      "relative_uplift": 0.031929687301581064,
+      "ci_low": -0.09074653755122677,
+      "ci_high": 0.16755588574783734,
+      "p_value": 0.5600145335051725,
+      "bootstrap_ci_low": -0.0879711459042037,
+      "bootstrap_ci_high": 0.1673184600889709,
+      "n_control": 10072,
+      "n_treatment": 9928
+    }
+  },
+  "churn_model": {
+    "roc_auc": 0.6320096448734003,
+    "pr_auc": 0.7008096213756121,
+    "pr_auc_baseline": 0.5936,
+    "brier_score": 0.23680842510241992,
+    "precision": 0.7001853568118629,
+    "recall": 0.5090970350404312,
+    "f1": 0.5895435037065938,
+    "predicted_positive_rate": 0.4316,
+    "confusion_matrix": [[1385, 647], [1457, 1511]],
+    "test_size": 5000,
+    "top_coefficients": [
+      {"feature": "numeric__tutorial_completed", "coefficient": -0.36101113969174237},
+      {"feature": "numeric__playtime_minutes_d1", "coefficient": -0.21650978206208457},
+      {"feature": "categorical__variant_control", "coefficient": 0.09508319029013104},
+      {"feature": "categorical__variant_treatment", "coefficient": -0.0892016207847296},
+      {"feature": "categorical__country_DE", "coefficient": -0.07502667801099219}
+    ]
+  },
+  "monte_carlo": {
+    "rollout_players": 1000000,
+    "simulations": 2000,
+    "incremental_retained_players_mean": 68703.68435899718,
+    "incremental_retained_players_ci_low": 55306.325079892136,
+    "incremental_retained_players_ci_high": 82465.18299508648,
+    "probability_positive_retention": 1.0,
+    "incremental_revenue_mean": 37859.470842968505,
+    "incremental_revenue_ci_low": -90766.05961253012,
+    "incremental_revenue_ci_high": 164685.52885781616,
+    "probability_positive_revenue": 0.7135
+  }
+}
